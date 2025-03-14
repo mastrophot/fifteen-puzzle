@@ -40,6 +40,7 @@ class FifteenPuzzle {
         this.startButton.addEventListener('click', () => this.startNewGame());
         this.boardElement.addEventListener('click', (e) => this.handleTileClick(e));
         this.saveScoreButton.addEventListener('click', () => this.saveScore());
+        document.addEventListener('keydown', (e) => this.handleKeyPress(e));
         this.loadLeaderboard();
     }
 
@@ -154,6 +155,11 @@ class FifteenPuzzle {
     gameWon() {
         this.isPlaying = false;
         clearInterval(this.timerInterval);
+        const finalTimeStr = this.timerElement.textContent;
+        const finalMovesStr = this.moves.toString();
+        
+        document.getElementById('finalTime').textContent = finalTimeStr;
+        document.getElementById('finalMoves').textContent = finalMovesStr;
         this.modal.style.display = 'block';
     }
 
@@ -166,6 +172,90 @@ class FifteenPuzzle {
         const seconds = this.timer % 60;
         this.timerElement.textContent = 
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    handleKeyPress(e) {
+        if (!this.isPlaying) return;
+
+        const emptyIndex = this.board.indexOf(0);
+        const row = Math.floor(emptyIndex / 4);
+        const col = emptyIndex % 4;
+        let targetIndex = -1;
+
+        switch(e.key) {
+            case 'ArrowUp':
+                if (row < 3) {
+                    targetIndex = emptyIndex + 4;
+                    // Перевіряємо чи можна рухати більше плиток
+                    if (row < 2 && this.board[targetIndex + 4] !== undefined) {
+                        this.moveTiles(targetIndex + 4, 'up');
+                    }
+                }
+                break;
+            case 'ArrowDown':
+                if (row > 0) {
+                    targetIndex = emptyIndex - 4;
+                    if (row > 1 && this.board[targetIndex - 4] !== undefined) {
+                        this.moveTiles(targetIndex - 4, 'down');
+                    }
+                }
+                break;
+            case 'ArrowLeft':
+                if (col < 3) {
+                    targetIndex = emptyIndex + 1;
+                    if (col < 2 && this.board[targetIndex + 1] !== undefined) {
+                        this.moveTiles(targetIndex + 1, 'left');
+                    }
+                }
+                break;
+            case 'ArrowRight':
+                if (col > 0) {
+                    targetIndex = emptyIndex - 1;
+                    if (col > 1 && this.board[targetIndex - 1] !== undefined) {
+                        this.moveTiles(targetIndex - 1, 'right');
+                    }
+                }
+                break;
+        }
+
+        if (targetIndex !== -1 && this.canMoveTile(targetIndex)) {
+            this.moveTile(targetIndex);
+            this.moves++;
+            this.updateMoves();
+            
+            if (this.checkWin()) {
+                this.gameWon();
+            }
+        }
+    }
+
+    moveTiles(startIndex, direction) {
+        const emptyIndex = this.board.indexOf(0);
+        let currentIndex = startIndex;
+        let moved = false;
+
+        while (this.canMoveTile(currentIndex)) {
+            this.moveTile(currentIndex);
+            moved = true;
+
+            switch(direction) {
+                case 'up': currentIndex += 4; break;
+                case 'down': currentIndex -= 4; break;
+                case 'left': currentIndex += 1; break;
+                case 'right': currentIndex -= 1; break;
+            }
+
+            if (currentIndex < 0 || currentIndex >= 16) break;
+        }
+
+        if (moved) {
+            this.moves++;
+            this.updateMoves();
+            
+            if (this.checkWin()) {
+                this.gameWon();
+            }
+        }
     }
 
     async saveScore() {
@@ -186,6 +276,7 @@ class FifteenPuzzle {
             await database.ref('leaderboard').push(score);
             this.modal.style.display = 'none';
             this.loadLeaderboard();
+            this.playerNameInput.value = ''; // Очищаємо поле вводу
         } catch (error) {
             console.error('Помилка збереження результату:', error);
             alert('Помилка збереження результату. Спробуйте ще раз.');
