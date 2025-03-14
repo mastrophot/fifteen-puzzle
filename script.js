@@ -259,6 +259,7 @@ class FifteenPuzzle {
     }
 
     async saveScore() {
+        console.log('Спроба зберегти результат...');
         const playerName = this.playerNameInput.value.trim();
         if (!playerName) {
             alert('Будь ласка, введіть ваше ім\'я');
@@ -272,28 +273,38 @@ class FifteenPuzzle {
             timestamp: Date.now()
         };
 
+        console.log('Дані для збереження:', score);
+
         try {
-            await database.ref('leaderboard').push(score);
+            console.log('Підключення до бази даних...');
+            const result = await database.ref('leaderboard').push(score);
+            console.log('Результат збережено:', result.key);
             this.modal.style.display = 'none';
             this.loadLeaderboard();
-            this.playerNameInput.value = ''; // Очищаємо поле вводу
+            this.playerNameInput.value = '';
         } catch (error) {
-            console.error('Помилка збереження результату:', error);
-            alert('Помилка збереження результату. Спробуйте ще раз.');
+            console.error('Детальна помилка збереження:', error);
+            console.error('Код помилки:', error.code);
+            console.error('Повідомлення:', error.message);
+            alert(`Помилка збереження результату: ${error.message}`);
         }
     }
 
     loadLeaderboard() {
+        console.log('Завантаження таблиці рекордів...');
         database.ref('leaderboard')
             .orderByChild('moves')
             .limitToFirst(10)
             .on('value', (snapshot) => {
+                console.log('Отримано дані таблиці рекордів');
                 this.leaderboardList.innerHTML = '';
                 const scores = [];
                 
                 snapshot.forEach((childSnapshot) => {
                     scores.push(childSnapshot.val());
                 });
+                
+                console.log('Кількість рекордів:', scores.length);
                 
                 scores.sort((a, b) => {
                     if (a.moves === b.moves) {
@@ -315,6 +326,10 @@ class FifteenPuzzle {
                     `;
                     this.leaderboardList.appendChild(item);
                 });
+            }, (error) => {
+                console.error('Помилка завантаження таблиці рекордів:', error);
+                console.error('Код помилки:', error.code);
+                console.error('Повідомлення:', error.message);
             });
     }
 }
