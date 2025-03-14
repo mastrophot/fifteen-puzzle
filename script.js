@@ -130,25 +130,45 @@ class FifteenPuzzle {
                 // Горизонтальний рух
                 const start = Math.min(clickedCol, emptyCol);
                 const end = Math.max(clickedCol, emptyCol);
-                const direction = clickedCol < emptyCol ? 1 : -1;
                 
-                for (let col = start; col < end; col++) {
-                    const currentIndex = clickedRow * 4 + col;
-                    const nextIndex = currentIndex + direction;
-                    [this.board[currentIndex], this.board[nextIndex]] = 
-                    [this.board[nextIndex], this.board[currentIndex]];
+                if (clickedCol < emptyCol) {
+                    // Рухаємо вправо
+                    for (let col = emptyCol - 1; col >= clickedCol; col--) {
+                        const currentIndex = clickedRow * 4 + col;
+                        const nextIndex = currentIndex + 1;
+                        [this.board[currentIndex], this.board[nextIndex]] = 
+                        [this.board[nextIndex], this.board[currentIndex]];
+                    }
+                } else {
+                    // Рухаємо вліво
+                    for (let col = emptyCol + 1; col <= clickedCol; col++) {
+                        const currentIndex = clickedRow * 4 + col;
+                        const prevIndex = currentIndex - 1;
+                        [this.board[currentIndex], this.board[prevIndex]] = 
+                        [this.board[prevIndex], this.board[currentIndex]];
+                    }
                 }
             } else {
                 // Вертикальний рух
                 const start = Math.min(clickedRow, emptyRow);
                 const end = Math.max(clickedRow, emptyRow);
-                const direction = clickedRow < emptyRow ? 4 : -4;
                 
-                for (let row = start; row < end; row++) {
-                    const currentIndex = row * 4 + clickedCol;
-                    const nextIndex = currentIndex + direction;
-                    [this.board[currentIndex], this.board[nextIndex]] = 
-                    [this.board[nextIndex], this.board[currentIndex]];
+                if (clickedRow < emptyRow) {
+                    // Рухаємо вниз
+                    for (let row = emptyRow - 1; row >= clickedRow; row--) {
+                        const currentIndex = row * 4 + clickedCol;
+                        const nextIndex = currentIndex + 4;
+                        [this.board[currentIndex], this.board[nextIndex]] = 
+                        [this.board[nextIndex], this.board[currentIndex]];
+                    }
+                } else {
+                    // Рухаємо вгору
+                    for (let row = emptyRow + 1; row <= clickedRow; row++) {
+                        const currentIndex = row * 4 + clickedCol;
+                        const prevIndex = currentIndex - 4;
+                        [this.board[currentIndex], this.board[prevIndex]] = 
+                        [this.board[prevIndex], this.board[currentIndex]];
+                    }
                 }
             }
             
