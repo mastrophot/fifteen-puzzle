@@ -115,9 +115,44 @@ class FifteenPuzzle {
         const tile = e.target.closest('.tile');
         if (!tile || tile.classList.contains('empty')) return;
         
-        const index = parseInt(tile.dataset.index);
-        if (this.canMoveTile(index)) {
-            this.moveTile(index);
+        const clickedIndex = parseInt(tile.dataset.index);
+        const emptyIndex = this.board.indexOf(0);
+        
+        // Перевіряємо чи плитка знаходиться в тому ж рядку або стовпці що й пуста клітинка
+        const clickedRow = Math.floor(clickedIndex / 4);
+        const clickedCol = clickedIndex % 4;
+        const emptyRow = Math.floor(emptyIndex / 4);
+        const emptyCol = emptyIndex % 4;
+        
+        if (clickedRow === emptyRow || clickedCol === emptyCol) {
+            // Рухаємо всі плитки між клікнутою та пустою
+            if (clickedRow === emptyRow) {
+                // Горизонтальний рух
+                const start = Math.min(clickedCol, emptyCol);
+                const end = Math.max(clickedCol, emptyCol);
+                const direction = clickedCol < emptyCol ? 1 : -1;
+                
+                for (let col = start; col < end; col++) {
+                    const currentIndex = clickedRow * 4 + col;
+                    const nextIndex = currentIndex + direction;
+                    [this.board[currentIndex], this.board[nextIndex]] = 
+                    [this.board[nextIndex], this.board[currentIndex]];
+                }
+            } else {
+                // Вертикальний рух
+                const start = Math.min(clickedRow, emptyRow);
+                const end = Math.max(clickedRow, emptyRow);
+                const direction = clickedRow < emptyRow ? 4 : -4;
+                
+                for (let row = start; row < end; row++) {
+                    const currentIndex = row * 4 + clickedCol;
+                    const nextIndex = currentIndex + direction;
+                    [this.board[currentIndex], this.board[nextIndex]] = 
+                    [this.board[nextIndex], this.board[currentIndex]];
+                }
+            }
+            
+            this.renderBoard();
             this.moves++;
             this.updateMoves();
             
@@ -125,25 +160,6 @@ class FifteenPuzzle {
                 this.gameWon();
             }
         }
-    }
-
-    canMoveTile(index) {
-        const row = Math.floor(index / 4);
-        const col = index % 4;
-        const emptyIndex = this.board.indexOf(0);
-        const emptyRow = Math.floor(emptyIndex / 4);
-        const emptyCol = emptyIndex % 4;
-        
-        return (
-            (Math.abs(row - emptyRow) === 1 && col === emptyCol) ||
-            (Math.abs(col - emptyCol) === 1 && row === emptyRow)
-        );
-    }
-
-    moveTile(index) {
-        const emptyIndex = this.board.indexOf(0);
-        [this.board[index], this.board[emptyIndex]] = [this.board[emptyIndex], this.board[index]];
-        this.renderBoard();
     }
 
     checkWin() {
@@ -186,69 +202,29 @@ class FifteenPuzzle {
             case 'ArrowUp':
                 if (row < 3) {
                     targetIndex = emptyIndex + 4;
-                    // Перевіряємо чи можна рухати більше плиток
-                    if (row < 2 && this.board[targetIndex + 4] !== undefined) {
-                        this.moveTiles(targetIndex + 4, 'up');
-                    }
                 }
                 break;
             case 'ArrowDown':
                 if (row > 0) {
                     targetIndex = emptyIndex - 4;
-                    if (row > 1 && this.board[targetIndex - 4] !== undefined) {
-                        this.moveTiles(targetIndex - 4, 'down');
-                    }
                 }
                 break;
             case 'ArrowLeft':
                 if (col < 3) {
                     targetIndex = emptyIndex + 1;
-                    if (col < 2 && this.board[targetIndex + 1] !== undefined) {
-                        this.moveTiles(targetIndex + 1, 'left');
-                    }
                 }
                 break;
             case 'ArrowRight':
                 if (col > 0) {
                     targetIndex = emptyIndex - 1;
-                    if (col > 1 && this.board[targetIndex - 1] !== undefined) {
-                        this.moveTiles(targetIndex - 1, 'right');
-                    }
                 }
                 break;
         }
 
-        if (targetIndex !== -1 && this.canMoveTile(targetIndex)) {
-            this.moveTile(targetIndex);
-            this.moves++;
-            this.updateMoves();
-            
-            if (this.checkWin()) {
-                this.gameWon();
-            }
-        }
-    }
-
-    moveTiles(startIndex, direction) {
-        const emptyIndex = this.board.indexOf(0);
-        let currentIndex = startIndex;
-        let moved = false;
-
-        while (this.canMoveTile(currentIndex)) {
-            this.moveTile(currentIndex);
-            moved = true;
-
-            switch(direction) {
-                case 'up': currentIndex += 4; break;
-                case 'down': currentIndex -= 4; break;
-                case 'left': currentIndex += 1; break;
-                case 'right': currentIndex -= 1; break;
-            }
-
-            if (currentIndex < 0 || currentIndex >= 16) break;
-        }
-
-        if (moved) {
+        if (targetIndex !== -1 && targetIndex >= 0 && targetIndex < 16) {
+            // Рухаємо плитку
+            [this.board[emptyIndex], this.board[targetIndex]] = [this.board[targetIndex], this.board[emptyIndex]];
+            this.renderBoard();
             this.moves++;
             this.updateMoves();
             
