@@ -260,7 +260,7 @@ class FifteenPuzzle {
 
     loadLeaderboard() {
         console.log('Завантаження таблиці рекордів...');
-        database.ref('leaderboard')
+        return database.ref('leaderboard')
             .orderByChild('moves')
             .limitToFirst(10)
             .once('value')
@@ -333,7 +333,7 @@ class FifteenPuzzle {
             
             // Оновлюємо лідерборд
             this.modal.style.display = 'none';
-            this.loadLeaderboard();
+            await this.loadLeaderboard();
             this.playerNameInput.value = '';
             
         } catch (error) {

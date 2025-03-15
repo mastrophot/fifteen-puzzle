@@ -13,16 +13,18 @@
     <div class="container">
         <h1>П'ятнашки</h1>
         
-        <div class="game-info">
-            <div class="moves">Ходів: <span id="moves">0</span></div>
-            <div class="timer">Час: <span id="timer">00:00</span></div>
-        </div>
+        <div class="game-container">
+            <div class="game-info">
+                <div class="moves">Ходів: <span id="moves">0</span></div>
+                <div class="timer">Час: <span id="timer">00:00</span></div>
+            </div>
 
-        <div class="game-board" id="gameBoard">
-            <!-- Клітинки будуть додані через JavaScript -->
-        </div>
+            <div class="game-board">
+                <!-- Клітинки будуть додані через JavaScript -->
+            </div>
 
-        <button id="startGame">Нова гра</button>
+            <button id="startGame">Нова гра</button>
+        </div>
 
         <div class="leaderboard">
             <h2>Таблиця рекордів</h2>
@@ -32,7 +34,7 @@
         </div>
 
         <!-- Модальне вікно для переможця -->
-        <div id="winModal" class="modal">
+        <div class="modal">
             <div class="modal-content">
                 <h2>Вітаємо! Ви виграли!</h2>
                 <p>Ваш результат:</p>
