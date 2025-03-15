@@ -261,6 +261,8 @@ class FifteenPuzzle {
     loadLeaderboard() {
         console.log('Завантаження таблиці рекордів...');
         database.ref('leaderboard')
+            .orderByChild('moves')
+            .limitToFirst(10)
             .once('value')
             .then((snapshot) => {
                 console.log('Отримано дані таблиці рекордів');
@@ -274,24 +276,16 @@ class FifteenPuzzle {
                     });
                 });
                 
-                console.log('Кількість рекордів до сортування:', scores.length);
+                console.log('Отримані результати:', scores);
                 
                 // Сортуємо за кількістю ходів та часом
                 scores.sort((a, b) => {
-                    // Спочатку за кількістю ходів
                     const movesDiff = a.moves - b.moves;
                     if (movesDiff !== 0) return movesDiff;
-                    
-                    // Якщо ходи однакові, то за часом
                     return a.time - b.time;
                 });
                 
-                // Беремо тільки топ-10
-                const topScores = scores.slice(0, 10);
-                
-                console.log('Топ-10 рекордів після сортування:', topScores.length);
-                
-                topScores.forEach((score, index) => {
+                scores.forEach((score, index) => {
                     const minutes = Math.floor(score.time / 60);
                     const seconds = score.time % 60;
                     const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -306,9 +300,10 @@ class FifteenPuzzle {
                 });
             })
             .catch((error) => {
-                console.error('Помилка завантаження таблиці рекордів:', error);
+                console.error('Детальна помилка завантаження:', error);
                 console.error('Код помилки:', error.code);
                 console.error('Повідомлення:', error.message);
+                console.error('Стек помилки:', error.stack);
                 this.leaderboardList.innerHTML = '<div class="error-message">Помилка завантаження рекордів</div>';
             });
     }
@@ -331,55 +326,22 @@ class FifteenPuzzle {
         console.log('Дані для збереження:', score);
 
         try {
-            // Отримуємо всі поточні рекорди
-            const snapshot = await database.ref('leaderboard').once('value');
-            const scores = [];
-            snapshot.forEach((childSnapshot) => {
-                scores.push(childSnapshot.val());
-            });
-
-            // Додаємо новий результат
-            scores.push(score);
-
-            // Сортуємо всі результати
-            scores.sort((a, b) => {
-                const movesDiff = a.moves - b.moves;
-                if (movesDiff !== 0) return movesDiff;
-                return a.time - b.time;
-            });
-
-            // Якщо новий результат входить в топ-10
-            if (scores.findIndex(s => 
-                s.moves === score.moves && 
-                s.time === score.time && 
-                s.timestamp === score.timestamp) < 10) {
-                
-                console.log('Збереження нового рекорду...');
-                const result = await database.ref('leaderboard').push(score);
-                console.log('Результат збережено:', result.key);
-                
-                // Видаляємо старі результати, якщо їх більше 10
-                if (scores.length > 10) {
-                    const oldScores = await database.ref('leaderboard')
-                        .orderByChild('moves')
-                        .limitToLast(scores.length - 10)
-                        .once('value');
-                    
-                    oldScores.forEach((oldScore) => {
-                        database.ref('leaderboard').child(oldScore.key).remove();
-                    });
-                }
-                
-                this.modal.style.display = 'none';
-                this.loadLeaderboard();
-                this.playerNameInput.value = '';
-            } else {
-                alert('На жаль, ваш результат не потрапив до топ-10');
-                this.modal.style.display = 'none';
-            }
+            // Спроба прямого збереження
+            console.log('Пробуємо зберегти напряму...');
+            const result = await database.ref('leaderboard').push(score);
+            console.log('Результат збережено успішно:', result.key);
+            
+            // Оновлюємо лідерборд
+            this.modal.style.display = 'none';
+            this.loadLeaderboard();
+            this.playerNameInput.value = '';
+            
         } catch (error) {
-            console.error('Помилка збереження:', error);
-            alert(`Помилка збереження результату: ${error.message}`);
+            console.error('Детальна помилка збереження:', error);
+            console.error('Код помилки:', error.code);
+            console.error('Повідомлення:', error.message);
+            console.error('Стек помилки:', error.stack);
+            alert(`Помилка збереження результату. Перевірте консоль для деталей.`);
         }
     }
 }
