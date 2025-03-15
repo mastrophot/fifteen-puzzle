@@ -89,18 +89,17 @@ class FifteenPuzzle {
             }
         }
 
-        // Знаходимо позицію пустої клітинки з нижнього рядка
+        // Знаходимо позицію пустої клітинки
         const emptyIndex = puzzle.indexOf(0);
         const emptyRow = Math.floor(emptyIndex / 4);
-        const rowFromBottom = 3 - emptyRow;  // Відстань від нижнього рядка (0-based)
+        const rowFromBottom = 3 - emptyRow;
 
-        // Головоломка розв'язується, якщо:
-        // 1. Пуста клітинка на парному рядку знизу (включаючи останній рядок)
-        //    і кількість інверсій непарна
-        // АБО
-        // 2. Пуста клітинка на непарному рядку знизу
-        //    і кількість інверсій парна
-        return (rowFromBottom % 2 === 0) === (inversions % 2 === 1);
+        // Для дошки 4x4:
+        // Якщо пуста клітинка на парному рядку знизу (рядки 0 і 2),
+        // то головоломка розв'язується при парній кількості інверсій
+        // Якщо пуста клітинка на непарному рядку знизу (рядки 1 і 3),
+        // то головоломка розв'язується при непарній кількості інверсій
+        return (rowFromBottom % 2 === 0) === (inversions % 2 === 0);
     }
 
     renderBoard() {
@@ -259,6 +258,61 @@ class FifteenPuzzle {
         }
     }
 
+    loadLeaderboard() {
+        console.log('Завантаження таблиці рекордів...');
+        database.ref('leaderboard')
+            .once('value')
+            .then((snapshot) => {
+                console.log('Отримано дані таблиці рекордів');
+                this.leaderboardList.innerHTML = '';
+                const scores = [];
+                
+                snapshot.forEach((childSnapshot) => {
+                    scores.push({
+                        ...childSnapshot.val(),
+                        key: childSnapshot.key
+                    });
+                });
+                
+                console.log('Кількість рекордів до сортування:', scores.length);
+                
+                // Сортуємо за кількістю ходів та часом
+                scores.sort((a, b) => {
+                    // Спочатку за кількістю ходів
+                    const movesDiff = a.moves - b.moves;
+                    if (movesDiff !== 0) return movesDiff;
+                    
+                    // Якщо ходи однакові, то за часом
+                    return a.time - b.time;
+                });
+                
+                // Беремо тільки топ-10
+                const topScores = scores.slice(0, 10);
+                
+                console.log('Топ-10 рекордів після сортування:', topScores.length);
+                
+                topScores.forEach((score, index) => {
+                    const minutes = Math.floor(score.time / 60);
+                    const seconds = score.time % 60;
+                    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'leaderboard-item';
+                    item.innerHTML = `
+                        <span>${index + 1}. ${score.name}</span>
+                        <span>Ходів: ${score.moves} | Час: ${timeStr}</span>
+                    `;
+                    this.leaderboardList.appendChild(item);
+                });
+            })
+            .catch((error) => {
+                console.error('Помилка завантаження таблиці рекордів:', error);
+                console.error('Код помилки:', error.code);
+                console.error('Повідомлення:', error.message);
+                this.leaderboardList.innerHTML = '<div class="error-message">Помилка завантаження рекордів</div>';
+            });
+    }
+
     async saveScore() {
         console.log('Спроба зберегти результат...');
         const playerName = this.playerNameInput.value.trim();
@@ -277,61 +331,56 @@ class FifteenPuzzle {
         console.log('Дані для збереження:', score);
 
         try {
-            console.log('Підключення до бази даних...');
-            const result = await database.ref('leaderboard').push(score);
-            console.log('Результат збережено:', result.key);
-            this.modal.style.display = 'none';
-            this.loadLeaderboard();
-            this.playerNameInput.value = '';
+            // Отримуємо всі поточні рекорди
+            const snapshot = await database.ref('leaderboard').once('value');
+            const scores = [];
+            snapshot.forEach((childSnapshot) => {
+                scores.push(childSnapshot.val());
+            });
+
+            // Додаємо новий результат
+            scores.push(score);
+
+            // Сортуємо всі результати
+            scores.sort((a, b) => {
+                const movesDiff = a.moves - b.moves;
+                if (movesDiff !== 0) return movesDiff;
+                return a.time - b.time;
+            });
+
+            // Якщо новий результат входить в топ-10
+            if (scores.findIndex(s => 
+                s.moves === score.moves && 
+                s.time === score.time && 
+                s.timestamp === score.timestamp) < 10) {
+                
+                console.log('Збереження нового рекорду...');
+                const result = await database.ref('leaderboard').push(score);
+                console.log('Результат збережено:', result.key);
+                
+                // Видаляємо старі результати, якщо їх більше 10
+                if (scores.length > 10) {
+                    const oldScores = await database.ref('leaderboard')
+                        .orderByChild('moves')
+                        .limitToLast(scores.length - 10)
+                        .once('value');
+                    
+                    oldScores.forEach((oldScore) => {
+                        database.ref('leaderboard').child(oldScore.key).remove();
+                    });
+                }
+                
+                this.modal.style.display = 'none';
+                this.loadLeaderboard();
+                this.playerNameInput.value = '';
+            } else {
+                alert('На жаль, ваш результат не потрапив до топ-10');
+                this.modal.style.display = 'none';
+            }
         } catch (error) {
-            console.error('Детальна помилка збереження:', error);
-            console.error('Код помилки:', error.code);
-            console.error('Повідомлення:', error.message);
+            console.error('Помилка збереження:', error);
             alert(`Помилка збереження результату: ${error.message}`);
         }
-    }
-
-    loadLeaderboard() {
-        console.log('Завантаження таблиці рекордів...');
-        database.ref('leaderboard')
-            .orderByChild('moves')
-            .limitToFirst(10)
-            .on('value', (snapshot) => {
-                console.log('Отримано дані таблиці рекордів');
-                this.leaderboardList.innerHTML = '';
-                const scores = [];
-                
-                snapshot.forEach((childSnapshot) => {
-                    scores.push(childSnapshot.val());
-                });
-                
-                console.log('Кількість рекордів:', scores.length);
-                
-                scores.sort((a, b) => {
-                    if (a.moves === b.moves) {
-                        return a.time - b.time;
-                    }
-                    return a.moves - b.moves;
-                });
-                
-                scores.forEach((score, index) => {
-                    const minutes = Math.floor(score.time / 60);
-                    const seconds = score.time % 60;
-                    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                    
-                    const item = document.createElement('div');
-                    item.className = 'leaderboard-item';
-                    item.innerHTML = `
-                        <span>${index + 1}. ${score.name}</span>
-                        <span>Ходів: ${score.moves} | Час: ${timeStr}</span>
-                    `;
-                    this.leaderboardList.appendChild(item);
-                });
-            }, (error) => {
-                console.error('Помилка завантаження таблиці рекордів:', error);
-                console.error('Код помилки:', error.code);
-                console.error('Повідомлення:', error.message);
-            });
     }
 }
 
