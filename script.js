@@ -6,7 +6,7 @@ const firebaseConfig = {
     storageBucket: "fifteen-puzzle-3227b.firebasestorage.app",
     messagingSenderId: "560464007874",
     appId: "1:560464007874:web:ba6230a27faa4e1d8fe15b",
-    databaseURL: "https://fifteen-puzzle-3227b-default-rtdb.europe-west1.firebasedatabase.app" // Додаємо URL бази даних
+    databaseURL: "https://fifteen-puzzle-3227b-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
 // Initialize Firebase
