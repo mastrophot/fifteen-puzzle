@@ -61,41 +61,46 @@ class FifteenPuzzle {
     }
 
     createShuffledBoard() {
-        const numbers = Array.from({length: 15}, (_, i) => i + 1);
-        numbers.push(0); // 0 представляє пусту клітинку
-        
-        // Перемішуємо дошку
-        for (let i = numbers.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
-        }
-        
-        // Перевіряємо чи можливо розв'язати головоломку
-        if (!this.isSolvable(numbers)) {
-            // Якщо ні, міняємо місцями дві перші клітинки
-            [numbers[0], numbers[1]] = [numbers[1], numbers[0]];
-        }
+        let numbers;
+        do {
+            numbers = Array.from({length: 15}, (_, i) => i + 1);
+            numbers.push(0); // 0 представляє пусту клітинку
+            
+            // Перемішуємо дошку
+            for (let i = numbers.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+            }
+        } while (!this.isSolvable(numbers));
         
         return numbers;
     }
 
     isSolvable(puzzle) {
+        // Рахуємо кількість інверсій
         let inversions = 0;
-        const emptyTileRow = Math.floor(puzzle.indexOf(0) / 4) + 1;
-        
         for (let i = 0; i < puzzle.length - 1; i++) {
             if (puzzle[i] === 0) continue;
             for (let j = i + 1; j < puzzle.length; j++) {
                 if (puzzle[j] === 0) continue;
-                if (puzzle[i] > puzzle[j]) inversions++;
+                if (puzzle[i] > puzzle[j]) {
+                    inversions++;
+                }
             }
         }
-        
+
+        // Знаходимо позицію пустої клітинки з нижнього рядка
+        const emptyIndex = puzzle.indexOf(0);
+        const emptyRow = Math.floor(emptyIndex / 4);
+        const rowFromBottom = 3 - emptyRow;  // Відстань від нижнього рядка (0-based)
+
         // Головоломка розв'язується, якщо:
-        // 1. Ширина дошки парна (в нашому випадку 4)
-        // 2. Пуста клітинка знаходиться на парному рядку знизу і кількість інверсій непарна
-        // АБО пуста клітинка знаходиться на непарному рядку знизу і кількість інверсій парна
-        return (emptyTileRow % 2 === 0) === (inversions % 2 === 0);
+        // 1. Пуста клітинка на парному рядку знизу (включаючи останній рядок)
+        //    і кількість інверсій непарна
+        // АБО
+        // 2. Пуста клітинка на непарному рядку знизу
+        //    і кількість інверсій парна
+        return (rowFromBottom % 2 === 0) === (inversions % 2 === 1);
     }
 
     renderBoard() {
