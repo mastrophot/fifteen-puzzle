@@ -6,11 +6,13 @@ const firebaseConfig = {
     storageBucket: "fifteen-puzzle-3227b.firebasestorage.app",
     messagingSenderId: "560464007874",
     appId: "1:560464007874:web:ba6230a27faa4e1d8fe15b",
-    databaseURL: "https://fifteen-puzzle-3227b-default-rtdb.europe-west1.firebasedatabase.app"
+    databaseURL: "https://fifteen-puzzle-3227b-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const database = firebase.database();
 
 class FifteenPuzzle {
@@ -260,29 +262,29 @@ class FifteenPuzzle {
 
     loadLeaderboard() {
         console.log('Завантаження таблиці рекордів...');
-        return database.ref('leaderboard')
+        const leaderboardRef = database.ref('leaderboard');
+        
+        return leaderboardRef
             .orderByChild('moves')
             .limitToFirst(10)
             .once('value')
-            .then((snapshot) => {
-                console.log('Отримано дані таблиці рекордів');
+            .then(snapshot => {
                 this.leaderboardList.innerHTML = '';
                 const scores = [];
                 
-                snapshot.forEach((childSnapshot) => {
+                snapshot.forEach(childSnapshot => {
                     scores.push({
                         ...childSnapshot.val(),
                         key: childSnapshot.key
                     });
                 });
                 
-                console.log('Отримані результати:', scores);
-                
                 // Сортуємо за кількістю ходів та часом
                 scores.sort((a, b) => {
-                    const movesDiff = a.moves - b.moves;
-                    if (movesDiff !== 0) return movesDiff;
-                    return a.time - b.time;
+                    if (a.moves === b.moves) {
+                        return a.time - b.time;
+                    }
+                    return a.moves - b.moves;
                 });
                 
                 scores.forEach((score, index) => {
@@ -299,11 +301,8 @@ class FifteenPuzzle {
                     this.leaderboardList.appendChild(item);
                 });
             })
-            .catch((error) => {
-                console.error('Детальна помилка завантаження:', error);
-                console.error('Код помилки:', error.code);
-                console.error('Повідомлення:', error.message);
-                console.error('Стек помилки:', error.stack);
+            .catch(error => {
+                console.error('Помилка завантаження таблиці рекордів:', error);
                 this.leaderboardList.innerHTML = '<div class="error-message">Помилка завантаження рекордів</div>';
             });
     }
@@ -326,22 +325,19 @@ class FifteenPuzzle {
         console.log('Дані для збереження:', score);
 
         try {
-            // Спроба прямого збереження
-            console.log('Пробуємо зберегти напряму...');
-            const result = await database.ref('leaderboard').push(score);
-            console.log('Результат збережено успішно:', result.key);
+            const leaderboardRef = database.ref('leaderboard');
+            await leaderboardRef.push(score);
+            console.log('Результат збережено успішно');
             
-            // Оновлюємо лідерборд
             this.modal.style.display = 'none';
-            await this.loadLeaderboard();
             this.playerNameInput.value = '';
             
+            // Оновлюємо таблицю рекордів
+            await this.loadLeaderboard();
+            
         } catch (error) {
-            console.error('Детальна помилка збереження:', error);
-            console.error('Код помилки:', error.code);
-            console.error('Повідомлення:', error.message);
-            console.error('Стек помилки:', error.stack);
-            alert(`Помилка збереження результату. Перевірте консоль для деталей.`);
+            console.error('Помилка збереження:', error);
+            alert('Помилка збереження результату: ' + error.message);
         }
     }
 }
