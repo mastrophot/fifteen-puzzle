@@ -265,7 +265,7 @@ class FifteenPuzzle {
         const leaderboardRef = database.ref('leaderboard');
         
         return leaderboardRef
-            .orderByChild('moves')
+            .orderByChild('time')
             .limitToFirst(10)
             .once('value')
             .then(snapshot => {
@@ -279,12 +279,12 @@ class FifteenPuzzle {
                     });
                 });
                 
-                // Сортуємо за кількістю ходів та часом
+                // Сортуємо спочатку за часом, потім за ходами
                 scores.sort((a, b) => {
-                    if (a.moves === b.moves) {
-                        return a.time - b.time;
+                    if (a.time === b.time) {
+                        return a.moves - b.moves;
                     }
-                    return a.moves - b.moves;
+                    return a.time - b.time;
                 });
                 
                 scores.forEach((score, index) => {
@@ -296,7 +296,7 @@ class FifteenPuzzle {
                     item.className = 'leaderboard-item';
                     item.innerHTML = `
                         <span>${index + 1}. ${score.name}</span>
-                        <span>Ходів: ${score.moves} | Час: ${timeStr}</span>
+                        <span>Час: ${timeStr} | Ходів: ${score.moves}</span>
                     `;
                     this.leaderboardList.appendChild(item);
                 });
