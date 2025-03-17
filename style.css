@@ -224,3 +224,16 @@ input:focus {
         padding: 20px;
     }
 }
+
+
+.game {
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: rgba(26, 26, 26, 0.87); /* Трохи змінили прозорість */
+    color: #FFD700;
+}
