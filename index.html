@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+    <title>П'ятнашки</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>П'ятнашки</h1>
+        
+        <div class="game-container">
+            <div class="game-info">
+                <div class="moves">Ходів: <span id="moves">0</span></div>
+                <div class="timer">Час: <span id="timer">00:00</span></div>
+            </div>
+
+            <div class="game-board">
+                <!-- Клітинки будуть додані через JavaScript -->
+            </div>
+
+            <button id="startGame">Нова гра</button>
+        </div>
+
+        <div class="leaderboard">
+            <h2>Таблиця рекордів</h2>
+            <div id="leaderboardList">
+                <!-- Результати будуть додані через JavaScript -->
+            </div>
+        </div>
+
+        <!-- Модальне вікно для переможця -->
+        <div class="modal">
+            <div class="modal-content">
+                <h2>Вітаємо! Ви виграли!</h2>
+                <p>Ваш результат:</p>
+                <p>Час: <span id="finalTime"></span></p>
+                <p>Ходів: <span id="finalMoves"></span></p>
+                <input type="text" id="playerName" placeholder="Введіть ваше ім'я" maxlength="20">
+                <button id="saveScore">Зберегти результат</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
