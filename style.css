@@ -3,16 +3,14 @@
     padding: 0;
     box-sizing: border-box;
 }
-
 body {
     margin: 0;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #1a1a1a;  /* Темний фон замість картинки */
+    background-color: #1a1a1a;
 }
-
 .game {
     margin: 0;
     padding: 20px;
@@ -21,15 +19,13 @@ body {
     align-items: center;
     min-height: 100vh;
     font-family: Arial, sans-serif;
-    background-color: rgba(26, 26, 26, 0.95);  /* Трохи темніший фон для гри */
+    background-color: rgba(26, 26, 26, 0.95);
     color: #FFD700;
 }
-
 .container {
     width: min(95%, 500px);
     margin: 0 auto;
 }
-
 h1 {
     text-align: left;
     margin: 20px 0 20px 30px;
@@ -37,7 +33,6 @@ h1 {
     color: #FFD700;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
-
 .game-info {
     display: flex;
     justify-content: space-between;
@@ -46,35 +41,28 @@ h1 {
     color: #FFD700;
     padding: 0 10px;
 }
-
 .tile {
     color: #FFD700;
 }
-
 .leaderboard h2 {
     color: #FFD700;
 }
-
 .leaderboard-item {
     color: #FFD700;
 }
-
 .modal-content {
     color: #FFD700;
 }
-
 input {
     color: #FFD700;
 }
-
 .game-container {
     background-color: #2d2d2d;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-    margin: 50px 0 20px 0;  /* Збільшили відступ зверху */
+    margin: 50px 0 20px 0;  
 }
-
 .game-info {
     display: flex;
     justify-content: space-between;
@@ -83,7 +71,6 @@ input {
     color: #ffffff;
     padding: 0 10px;
 }
-
 .game-board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -96,7 +83,6 @@ input {
     background-color: #404040;
     border-radius: 10px;
 }
-
 .tile {
     aspect-ratio: 1;
     background-color: #666666;
@@ -111,13 +97,11 @@ input {
     transition: all 0.2s ease;
     border: 2px solid transparent;
 }
-
 .tile:hover {
     background-color: #808080;
     border-color: #4CAF50;
     transform: scale(0.98);
 }
-
 .empty {
     background-color: #404040;
     cursor: default;
@@ -129,7 +113,6 @@ input {
     transform: none;
     border-color: #333;
 }
-
 button {
     padding: 12px 24px;
     font-size: 1.2em;
@@ -143,17 +126,14 @@ button {
     transition: all 0.2s ease;
     width: 200px;
 }
-
 button:hover {
     background-color: #45a049;
     transform: translateY(-2px);
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
 }
-
 button:active {
     transform: translateY(0);
 }
-
 .leaderboard {
     margin: 30px auto;
     padding: 20px;
@@ -162,14 +142,12 @@ button:active {
     width: min(95%, 400px);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
-
 .leaderboard h2 {
     margin-bottom: 20px;
     color: #ffffff;
     text-align: center;
     font-size: 1.8em;
 }
-
 .leaderboard-item {
     display: flex;
     justify-content: space-between;
@@ -180,12 +158,10 @@ button:active {
     color: #ffffff;
     transition: transform 0.2s ease;
 }
-
 .leaderboard-item:hover {
     transform: translateX(5px);
     background-color: #4a4a4a;
 }
-
 .error-message {
     color: #ff6b6b;
     padding: 15px;
@@ -194,7 +170,6 @@ button:active {
     border-radius: 8px;
     margin: 10px 0;
 }
-
 .modal {
     display: none;
     position: fixed;
@@ -205,7 +180,6 @@ button:active {
     background-color: rgba(0, 0, 0, 0.9);
     backdrop-filter: blur(5px);
 }
-
 .modal-content {
     position: absolute;
     top: 50%;
@@ -219,7 +193,6 @@ button:active {
     width: min(90%, 400px);
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
 }
-
 input {
     padding: 12px 15px;
     margin: 15px 0;
@@ -231,34 +204,27 @@ input {
     border-radius: 8px;
     transition: border-color 0.2s ease;
 }
-
 input:focus {
     outline: none;
     border-color: #4CAF50;
 }
-
 @media (max-width: 480px) {
     body {
         padding: 10px;
     }
-
     h1 {
         font-size: 2em;
     }
-
     .game-info {
         font-size: 1em;
     }
-
     .tile {
         font-size: 7vw;
     }
-
     button {
         width: 100%;
         max-width: 200px;
     }
-
     .modal-content {
         padding: 20px;
     }
