@@ -6,13 +6,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
     <title>П'ятнашки</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
     <div class="container">
-        <!-- Видаляємо тег h1 з текстом "П'ятнашки" -->
         <div class="game-container">
             <div class="game-info">
                 <div class="moves">Ходів: <span id="moves">0</span></div>
@@ -20,7 +18,6 @@
             </div>
 
             <div class="game-board">
-                <!-- Клітинки будуть додані через JavaScript -->
             </div>
 
             <button id="startGame">Нова гра</button>
@@ -29,11 +26,8 @@
         <div class="leaderboard">
             <h2>Таблиця рекордів</h2>
             <div id="leaderboardList">
-                <!-- Результати будуть додані через JavaScript -->
             </div>
         </div>
-
-        <!-- Модальне вікно для переможця -->
         <div class="modal">
             <div class="modal-content">
                 <h2>Вітаємо! Ви виграли!</h2>
