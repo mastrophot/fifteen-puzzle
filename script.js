@@ -30,6 +30,10 @@ class FifteenPuzzle {
         this.saveScoreButton = document.getElementById('saveScore');
         this.playerNameInput = document.getElementById('playerName');
         this.leaderboardList = document.getElementById('leaderboardList');
+        
+        // Audio
+        this.moveSound = document.getElementById('moveSound');
+        this.winSound = document.getElementById('winSound');
     }
     initializeEventListeners() {
         this.startButton.addEventListener('click', () => this.startNewGame());
@@ -81,14 +85,24 @@ class FifteenPuzzle {
         return (rowFromBottom % 2 === 0) === (inversions % 2 === 0);
     }
     renderBoard() {
-        this.boardElement.innerHTML = '';
-        this.board.forEach((number, index) => {
-            const tile = document.createElement('div');
-            tile.className = `tile${number === 0 ? ' empty' : ''}`;
-            tile.dataset.index = index;
-            if (number !== 0) tile.textContent = number;
-            this.boardElement.appendChild(tile);
-        });
+        const tiles = this.boardElement.querySelectorAll('.tile');
+        if (tiles.length === 0) {
+            this.boardElement.innerHTML = '';
+            this.board.forEach((number, index) => {
+                const tile = document.createElement('div');
+                tile.className = `tile${number === 0 ? ' empty' : ''}`;
+                tile.dataset.index = index;
+                if (number !== 0) tile.textContent = number;
+                this.boardElement.appendChild(tile);
+            });
+        } else {
+            this.board.forEach((number, index) => {
+                const tile = tiles[index];
+                tile.className = `tile${number === 0 ? ' empty' : ''}`;
+                tile.dataset.index = index;
+                tile.textContent = number === 0 ? '' : number;
+            });
+        }
     }
     handleTileClick(e) {
         if (!this.isPlaying) return;
@@ -141,6 +155,12 @@ class FifteenPuzzle {
             this.renderBoard();
             this.moves++;
             this.updateMoves();
+
+            if (this.moveSound) {
+                this.moveSound.currentTime = 0;
+                this.moveSound.play().catch(e => console.log('Audio play failed:', e));
+            }
+
             if (this.checkWin()) {
                 this.gameWon();
             }
@@ -154,6 +174,11 @@ class FifteenPuzzle {
     gameWon() {
         this.isPlaying = false;
         clearInterval(this.timerInterval);
+        
+        if (this.winSound) {
+            this.winSound.play().catch(e => console.log('Audio play failed:', e));
+        }
+
         const finalTimeStr = this.timerElement.textContent;
         const finalMovesStr = this.moves.toString();
         document.getElementById('finalTime').textContent = finalTimeStr;
@@ -202,6 +227,12 @@ class FifteenPuzzle {
             this.renderBoard();
             this.moves++;
             this.updateMoves();
+
+            if (this.moveSound) {
+                this.moveSound.currentTime = 0;
+                this.moveSound.play().catch(e => console.log('Audio play failed:', e));
+            }
+
             if (this.checkWin()) {
                 this.gameWon();
             }
