@@ -196,6 +196,11 @@ class FifteenPuzzle {
     }
     handleKeyPress(e) {
         if (!this.isPlaying) return;
+        
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+        }
+
         const emptyIndex = this.board.indexOf(0);
         const row = Math.floor(emptyIndex / 4);
         const col = emptyIndex % 4;
