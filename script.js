@@ -134,16 +134,17 @@ class FifteenPuzzle {
       }
     }
     const emptyIndex = puzzle.indexOf(0);
-    const emptyRow = Math.floor(emptyIndex / this.boardSize);
-    // Distance from bottom (1-indexed)
-    const rowFromBottom = this.boardSize - emptyRow;
+    const emptyRowFromTop = Math.floor(emptyIndex / this.boardSize); // 0-indexed top row
+    const emptyRowFromBottom = this.boardSize - emptyRowFromTop; // 1-indexed bottom row
 
     if (this.boardSize % 2 !== 0) {
       return inversions % 2 === 0;
     } else {
-      return rowFromBottom % 2 === 0
-        ? inversions % 2 !== 0
-        : inversions % 2 === 0;
+      if (emptyRowFromBottom % 2 === 0) { // even row from bottom
+        return inversions % 2 !== 0; // odd number of inversions
+      } else { // odd row from bottom
+        return inversions % 2 === 0; // even number of inversions
+      }
     }
   }
 
