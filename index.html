@@ -1,48 +1,126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
-    <title>П'ятнашки</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <meta
+      name="description"
+      content="Сучасна головоломка П'ятнашки з преміальним дизайном 2026 року. Розвивай мислення та змагайся у швидкості!"
+    />
+    <title>П'ятнашки | Преміум</title>
+
+    <!-- Сучасні шрифти: Outfit для заголовків та UI елементів, Inter для дрібного тексту -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500&family=Outfit:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-</head>
-<body>
-    <audio id="moveSound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
-    <audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
-    <div class="container">
-        <div class="game-container">
-            <div class="game-info">
-                <div class="moves">Ходів: <span id="moves">0</span></div>
-                <div class="timer">Час: <span id="timer">00:00</span></div>
-            </div>
+  </head>
+  <body>
+    <div class="mesh-background" aria-hidden="true"></div>
 
-            <div class="game-board">
-            </div>
+    <audio
+      id="moveSound"
+      src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"
+      preload="auto"
+    ></audio>
+    <audio
+      id="winSound"
+      src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"
+      preload="auto"
+    ></audio>
 
-            <button id="startGame">Нова гра</button>
+    <main class="container">
+      <section
+        class="game-container glass-panel"
+        aria-label="Ігрове поле головоломки"
+      >
+        <header class="game-info">
+          <div class="stat-badge moves" aria-live="polite">
+            Ходів: <span id="moves" class="stat-value">0</span>
+          </div>
+          <div class="stat-badge timer" aria-live="polite">
+            Час: <span id="timer" class="stat-value">00:00</span>
+          </div>
+        </header>
+
+        <div class="game-board-wrapper">
+          <div class="game-board" role="grid" aria-label="П'ятнашки 4x4">
+            <!-- Tiles will be generated here -->
+          </div>
         </div>
 
-        <div class="leaderboard">
-            <h2>Таблиця рекордів</h2>
-            <div id="leaderboardList">
-            </div>
+        <button id="startGame" class="glow-button" aria-label="Почати нову гру">
+          <span class="button-content">Нова гра</span>
+          <span class="button-glow"></span>
+        </button>
+      </section>
+
+      <aside class="leaderboard glass-panel" aria-label="Таблиця рекордів">
+        <h2>Топ гравців</h2>
+        <div id="leaderboardList" class="leaderboard-list">
+          <div class="loading-skeleton"></div>
+          <div class="loading-skeleton"></div>
+          <div class="loading-skeleton"></div>
         </div>
-        <div class="modal">
-            <div class="modal-content">
-                <h2>Вітаємо! Ви виграли!</h2>
-                <p>Ваш результат:</p>
-                <p>Час: <span id="finalTime"></span></p>
-                <p>Ходів: <span id="finalMoves"></span></p>
-                <input type="text" id="playerName" placeholder="Введіть ваше ім'я" maxlength="20">
-                <button id="saveScore">Зберегти результат</button>
+      </aside>
+
+      <dialog class="modal glass-modal" id="winModal">
+        <div class="modal-content">
+          <div class="win-icon">🏆</div>
+          <h2>Блискуча перемога!</h2>
+          <div class="final-stats">
+            <div class="stat-box">
+              <span class="stat-label">Час</span>
+              <span id="finalTime" class="stat-value highlight">--:--</span>
             </div>
+            <div class="stat-box">
+              <span class="stat-label">Ходів</span>
+              <span id="finalMoves" class="stat-value highlight">0</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="playerName" class="sr-only"
+              >Ваше ім'я для таблиці рекордів</label
+            >
+            <input
+              type="text"
+              id="playerName"
+              placeholder="Введіть ваше ім'я"
+              maxlength="20"
+              autocomplete="off"
+            />
+          </div>
+          <button id="saveScore" class="glow-button primary">
+            Зберегти назавжди
+          </button>
+          <button id="closeModal" class="text-button mt-4">Закрити</button>
         </div>
-    </div>
+      </dialog>
+    </main>
+
+    <!-- Confetti canvas container (added dynamically if needed, or static here) -->
+    <canvas
+      id="confetti-canvas"
+      class="confetti-canvas"
+      aria-hidden="true"
+    ></canvas>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
