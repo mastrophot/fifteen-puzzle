@@ -135,8 +135,8 @@ class FifteenPuzzle {
     }
     const emptyIndex = puzzle.indexOf(0);
     const emptyRow = Math.floor(emptyIndex / this.boardSize);
-    // Distance from bottom
-    const rowFromBottom = this.boardSize - 1 - emptyRow;
+    // Distance from bottom (1-indexed)
+    const rowFromBottom = this.boardSize - emptyRow;
 
     if (this.boardSize % 2 !== 0) {
       return inversions % 2 === 0;
