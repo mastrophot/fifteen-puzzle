@@ -23,12 +23,53 @@ class FifteenPuzzle {
     this.timerInterval = null;
     this.isPlaying = false;
 
+    this.initAudio();
     this.initializeElements();
     this.initializeEventListeners();
+    this.restoreGame();
+  }
 
-    // Initial setup
-    this.board = Array.from({ length: 15 }, (_, i) => i + 1).concat([0]);
-    this.renderBoard(false);
+  initAudio() {
+    this.audioCtx = null;
+    try {
+      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {}
+  }
+
+  playMoveSound() {
+    if (!this.audioCtx) return;
+    try {
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.frequency.value = 520 + Math.random() * 80;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.15, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.08);
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + 0.08);
+    } catch(e) {}
+  }
+
+  playWinSound() {
+    if (!this.audioCtx) return;
+    try {
+      const notes = [523, 659, 784, 1047];
+      notes.forEach((freq, i) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = "sine";
+        const t = this.audioCtx.currentTime + i * 0.12;
+        gain.gain.setValueAtTime(0.15, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.start(t);
+        osc.stop(t + 0.25);
+      });
+    } catch(e) {}
   }
 
   initializeElements() {
@@ -36,65 +77,86 @@ class FifteenPuzzle {
     this.movesElement = document.getElementById("moves");
     this.timerElement = document.getElementById("timer");
     this.startButton = document.getElementById("startGame");
-
-    // Modal elements
     this.winModal = document.getElementById("winModal");
     this.saveScoreButton = document.getElementById("saveScore");
     this.closeModalButton = document.getElementById("closeModal");
     this.playerNameInput = document.getElementById("playerName");
-
-    // Leaderboard
     this.leaderboardList = document.getElementById("leaderboardList");
-
-    // Audio
-    this.moveSound = document.getElementById("moveSound");
-    this.winSound = document.getElementById("winSound");
-
-    if (this.moveSound) this.moveSound.volume = 0.5;
-    if (this.winSound) this.winSound.volume = 0.7;
   }
 
   initializeEventListeners() {
     this.startButton.addEventListener("click", () => this.startNewGame());
     this.boardElement.addEventListener("click", (e) => this.handleTileClick(e));
-
-    // Modal interactions
     this.saveScoreButton.addEventListener("click", () => this.saveScore());
-    this.closeModalButton.addEventListener("click", () =>
-      this.winModal.close(),
-    );
+    this.closeModalButton.addEventListener("click", () => this.winModal.close());
     this.playerNameInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") this.saveScore();
     });
-
-    // Keyboard support
     document.addEventListener("keydown", (e) => this.handleKeyPress(e));
-
-    // Load scores on init
     this.loadLeaderboard();
   }
 
-  startNewGame() {
-    // Haptic feedback if supported
-    this.vibrate(50);
+  restoreGame() {
+    try {
+      const saved = localStorage.getItem("fifteen-puzzle-state");
+      if (saved) {
+        const state = JSON.parse(saved);
+        this.board = state.board;
+        this.moves = state.moves || 0;
+        this.timer = state.timer || 0;
+        this.isPlaying = state.isPlaying || false;
+        this.updateMoves();
+        this.updateTimer();
+        this.renderBoard(false);
+        if (this.isPlaying) {
+          this.timerInterval = setInterval(() => {
+            this.timer++;
+            this.updateTimer();
+            this.saveToLocalStorage();
+          }, 1000);
+          const btnText = this.startButton.querySelector(".button-content");
+          if (btnText) btnText.textContent = "Перезапустити";
+        }
+        return;
+      }
+    } catch(e) {}
+    this.board = Array.from({ length: 15 }, (_, i) => i + 1).concat([0]);
+    this.renderBoard(false);
+  }
 
+  saveToLocalStorage() {
+    try {
+      localStorage.setItem("fifteen-puzzle-state", JSON.stringify({
+        board: this.board,
+        moves: this.moves,
+        timer: this.timer,
+        isPlaying: this.isPlaying,
+        savedAt: Date.now()
+      }));
+    } catch(e) {}
+  }
+
+  clearLocalStorage() {
+    try {
+      localStorage.removeItem("fifteen-puzzle-state");
+    } catch(e) {}
+  }
+
+  startNewGame() {
+    this.vibrate(50);
     this.isPlaying = true;
     this.moves = 0;
     this.timer = 0;
-
     this.updateMoves();
     this.updateTimer();
-
     this.board = this.createShuffledBoard();
 
-    // Add a nice shuffle animation effect
     this.boardElement.style.opacity = "0";
     this.boardElement.style.transform = "scale(0.95)";
 
     setTimeout(() => {
       this.renderBoard(false);
-      this.boardElement.style.transition =
-        "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)";
+      this.boardElement.style.transition = "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)";
       this.boardElement.style.opacity = "1";
       this.boardElement.style.transform = "scale(1)";
     }, 150);
@@ -103,9 +165,10 @@ class FifteenPuzzle {
     this.timerInterval = setInterval(() => {
       this.timer++;
       this.updateTimer();
+      this.saveToLocalStorage();
     }, 1000);
 
-    // Reset button glow effect
+    this.saveToLocalStorage();
     const btnText = this.startButton.querySelector(".button-content");
     if (btnText) btnText.textContent = "Перезапустити";
   }
@@ -115,7 +178,6 @@ class FifteenPuzzle {
     do {
       numbers = Array.from({ length: 15 }, (_, i) => i + 1);
       numbers.push(0);
-      // Fisher-Yates shuffle
       for (let i = numbers.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
@@ -134,77 +196,55 @@ class FifteenPuzzle {
       }
     }
     const emptyIndex = puzzle.indexOf(0);
-    const emptyRowFromTop = Math.floor(emptyIndex / this.boardSize); // 0-indexed top row
-    const emptyRowFromBottom = this.boardSize - emptyRowFromTop; // 1-indexed bottom row
+    const emptyRowFromTop = Math.floor(emptyIndex / this.boardSize);
+    const emptyRowFromBottom = this.boardSize - emptyRowFromTop;
 
     if (this.boardSize % 2 !== 0) {
       return inversions % 2 === 0;
     } else {
-      if (emptyRowFromBottom % 2 === 0) { // even row from bottom
-        return inversions % 2 !== 0; // odd number of inversions
-      } else { // odd row from bottom
-        return inversions % 2 === 0; // even number of inversions
+      if (emptyRowFromBottom % 2 === 0) {
+        return inversions % 2 !== 0;
+      } else {
+        return inversions % 2 === 0;
       }
     }
   }
 
   renderBoard(animate = false) {
     const tiles = this.boardElement.querySelectorAll(".tile");
-
     if (tiles.length === 0) {
-      // First render
       this.boardElement.innerHTML = "";
       for (let i = 0; i < 16; i++) {
         const tile = document.createElement("div");
         tile.className = "tile";
         tile.dataset.index = i;
-
-        // Add 3D hover effect logic natively via JS
-        tile.addEventListener("mousemove", (e) =>
-          this.handleTileHover(e, tile),
-        );
-        tile.addEventListener("mouseleave", () => {
-          tile.style.transform = "";
-        });
-
+        tile.addEventListener("mousemove", (e) => this.handleTileHover(e, tile));
+        tile.addEventListener("mouseleave", () => { tile.style.transform = ""; });
         this.boardElement.appendChild(tile);
       }
     }
-
     const currentTiles = this.boardElement.querySelectorAll(".tile");
-
     this.board.forEach((number, index) => {
       const tile = currentTiles[index];
       tile.className = `tile${number === 0 ? " empty" : ""}`;
-
       if (animate && tile.textContent != number && number !== 0) {
         tile.classList.add("moving");
         setTimeout(() => tile.classList.remove("moving"), 250);
       }
-
       tile.textContent = number === 0 ? "" : number;
-
-      // Set position based on index (CSS Grid handles layout, but we could use absolute for better sliding)
-      // Keeping Grid for simplicity but relying on DOM order swap
     });
   }
 
   handleTileHover(e, tile) {
-    if (tile.classList.contains("empty") || tile.classList.contains("moving"))
-      return;
-
+    if (tile.classList.contains("empty") || tile.classList.contains("moving")) return;
     const rect = tile.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
-    // Calculate tilt
     const xPct = x / rect.width;
     const yPct = y / rect.height;
-
-    const maxTilt = 15; // deg
+    const maxTilt = 15;
     const tiltX = (0.5 - yPct) * maxTilt * 2;
     const tiltY = (xPct - 0.5) * maxTilt * 2;
-
     tile.style.transform = `translateZ(10px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.02)`;
   }
 
@@ -212,26 +252,19 @@ class FifteenPuzzle {
     if (!this.isPlaying) return;
     const tile = e.target.closest(".tile");
     if (!tile || tile.classList.contains("empty")) return;
-
     const clickedIndex = Array.from(this.boardElement.children).indexOf(tile);
     this.attemptMove(clickedIndex);
   }
 
   handleKeyPress(e) {
     if (!this.isPlaying) return;
-
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
       e.preventDefault();
     }
-
     const emptyIndex = this.board.indexOf(0);
     const row = Math.floor(emptyIndex / this.boardSize);
     const col = emptyIndex % this.boardSize;
-
     let targetIndex = -1;
-
-    // Arrow keys move tiles *into* the empty space.
-    // E.g., ArrowUp should push the tile *below* the empty space UP into it.
     switch (e.key) {
       case "ArrowUp":
         if (row < this.boardSize - 1) targetIndex = emptyIndex + this.boardSize;
@@ -246,73 +279,41 @@ class FifteenPuzzle {
         if (col > 0) targetIndex = emptyIndex - 1;
         break;
     }
-
-    if (targetIndex !== -1) {
-      this.attemptMove(targetIndex);
-    }
+    if (targetIndex !== -1) this.attemptMove(targetIndex);
   }
 
   attemptMove(clickedIndex) {
     const emptyIndex = this.board.indexOf(0);
-
     const clickedRow = Math.floor(clickedIndex / this.boardSize);
     const clickedCol = clickedIndex % this.boardSize;
     const emptyRow = Math.floor(emptyIndex / this.boardSize);
     const emptyCol = emptyIndex % this.boardSize;
 
-    // Check if movement is valid (same row or same collumn)
     if (clickedRow === emptyRow || clickedCol === emptyCol) {
-      // Generate intermediate states to allow multi-tile sliding
       let moves = [];
-
       if (clickedRow === emptyRow) {
-        // Horizontal move
         const step = clickedCol < emptyCol ? 1 : -1;
         for (let c = emptyCol; c !== clickedCol; c -= step) {
-          moves.push([
-            clickedRow * this.boardSize + c,
-            clickedRow * this.boardSize + (c - step),
-          ]);
+          moves.push([clickedRow * this.boardSize + c, clickedRow * this.boardSize + (c - step)]);
         }
       } else {
-        // Vertical move
         const step = clickedRow < emptyRow ? 1 : -1;
         for (let r = emptyRow; r !== clickedRow; r -= step) {
-          moves.push([
-            r * this.boardSize + clickedCol,
-            (r - step) * this.boardSize + clickedCol,
-          ]);
+          moves.push([r * this.boardSize + clickedCol, (r - step) * this.boardSize + clickedCol]);
         }
       }
-
-      // Execute swaps
       for (let [idx1, idx2] of moves) {
-        [this.board[idx1], this.board[idx2]] = [
-          this.board[idx2],
-          this.board[idx1],
-        ];
+        [this.board[idx1], this.board[idx2]] = [this.board[idx2], this.board[idx1]];
       }
-
       this.vibrate(15);
       this.playMoveSound();
-
       this.renderBoard(true);
-
       this.moves++;
       this.updateMoves();
-
+      this.saveToLocalStorage();
       if (this.checkWinCondition(this.board)) {
-        setTimeout(() => this.gameWon(), 300); // Wait for animation
+        setTimeout(() => this.gameWon(), 300);
       }
-    }
-  }
-
-  playMoveSound() {
-    if (this.moveSound) {
-      this.moveSound.currentTime = 0;
-      // Slightly randomize pitch for better feel
-      this.moveSound.playbackRate = 0.9 + Math.random() * 0.2;
-      this.moveSound.play().catch((e) => console.log("Audio play failed:", e));
     }
   }
 
@@ -332,35 +333,27 @@ class FifteenPuzzle {
   gameWon() {
     this.isPlaying = false;
     clearInterval(this.timerInterval);
-
-    if (this.winSound) {
-      this.winSound.currentTime = 0;
-      this.winSound.play().catch((e) => console.log("Audio play failed:", e));
-    }
-
+    this.clearLocalStorage();
+    this.playWinSound();
     this.triggerConfetti();
     this.vibrate([100, 50, 100, 50, 200]);
 
     const finalTimeStr = this.timerElement.textContent;
     const finalMovesStr = this.moves.toString();
-
     document.getElementById("finalTime").textContent = finalTimeStr;
     document.getElementById("finalMoves").textContent = finalMovesStr;
-
-    // Reset player input
     this.playerNameInput.value = "";
-
-    // Show native `<dialog>`
     if (typeof this.winModal.showModal === "function") {
       this.winModal.showModal();
     } else {
       this.winModal.setAttribute("open", "");
     }
+    const btnText = this.startButton.querySelector(".button-content");
+    if (btnText) btnText.textContent = "Нова гра";
   }
 
   updateMoves() {
     this.movesElement.textContent = this.moves;
-    // Small pop animation
     this.movesElement.style.transform = "scale(1.2)";
     this.movesElement.style.color = "var(--text-color)";
     setTimeout(() => {
@@ -375,18 +368,14 @@ class FifteenPuzzle {
     this.timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   }
 
-  // Confetti implementation embedded (no external libraries needed)
   triggerConfetti() {
     const canvas = document.getElementById("confetti-canvas");
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     const pieces = [];
     const colors = ["#38bdf8", "#818cf8", "#34d399", "#fbbf24", "#f472b6"];
-
     for (let i = 0; i < 150; i++) {
       pieces.push({
         x: Math.random() * canvas.width,
@@ -400,21 +389,16 @@ class FifteenPuzzle {
         dRot: Math.random() * 5 - 2.5,
       });
     }
-
     let animationId;
-
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       let active = false;
-
-      pieces.forEach((p) => {
+      pieces.forEach(p => {
         p.y += p.dy;
         p.x += p.dx;
         p.rot += p.dRot;
-        p.dy += 0.05; // gravity
-
+        p.dy += 0.05;
         if (p.y < canvas.height) active = true;
-
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate((p.rot * Math.PI) / 180);
@@ -422,23 +406,18 @@ class FifteenPuzzle {
         ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
         ctx.restore();
       });
-
       if (active) {
         animationId = requestAnimationFrame(draw);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     };
-
     draw();
-
-    // Stop animation after 5 seconds to clear memory
     setTimeout(() => cancelAnimationFrame(animationId), 5000);
   }
 
   loadLeaderboard() {
     const leaderboardRef = database.ref("leaderboard");
-
     return leaderboardRef
       .orderByChild("time")
       .limitToFirst(10)
@@ -447,89 +426,69 @@ class FifteenPuzzle {
         this.leaderboardList.innerHTML = "";
         const scores = [];
         snapshot.forEach((childSnapshot) => {
-          scores.push({
-            ...childSnapshot.val(),
-            key: childSnapshot.key,
-          });
+          scores.push({ ...childSnapshot.val(), key: childSnapshot.key });
         });
-
         scores.sort((a, b) => {
           if (a.time === b.time) return a.moves - b.moves;
           return a.time - b.time;
         });
-
         if (scores.length === 0) {
-          this.leaderboardList.innerHTML =
-            '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Ще немає рекордів. Будьте першим!</div>';
+          this.leaderboardList.innerHTML = '<div style="text-align:center; padding:20px; color: var(--text-muted);">Ще немає рекордів. Будьте першим!</div>';
           return;
         }
-
-        // Staggered animation reveal
         scores.forEach((score, index) => {
           const minutes = Math.floor(score.time / 60);
           const seconds = score.time % 60;
           const timeStr = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-
           const item = document.createElement("div");
           item.className = "leaderboard-item";
           item.style.animationDelay = `${index * 0.05}s`;
-
           item.innerHTML = `
-                        <div class="player-info">
-                            <span class="rank">#${index + 1}</span>
-                            <span class="player-name">${this.escapeHTML(score.name)}</span>
-                        </div>
-                        <div class="player-stats">
-                            <span class="time">${timeStr}</span>
-                            <span>${score.moves} ходів</span>
-                        </div>
-                    `;
+            <div class="player-info">
+              <span class="rank">#${index + 1}</span>
+              <span class="player-name">${this.escapeHTML(score.name)}</span>
+            </div>
+            <div class="player-stats">
+              <span class="time">${timeStr}</span>
+              <span>${score.moves} ходів</span>
+            </div>`;
           this.leaderboardList.appendChild(item);
         });
       })
       .catch((error) => {
         console.error("Помилка завантаження таблиці рекордів:", error);
-        this.leaderboardList.innerHTML =
-          '<div style="color: #ef4444; padding: 20px; text-align:center;">Помилка завантаження. Спробуйте оновити сторінку.</div>';
+        this.leaderboardList.innerHTML = '<div style="color: #ef4444; padding: 20px; text-align: center;">Помилка завантаження. Спробуйте оновити сторінку.</div>';
       });
   }
 
   async saveScore() {
     const playerNameStr = this.playerNameInput.value.trim();
     if (!playerNameStr) {
-      // Shake animation for input
       this.playerNameInput.style.animation = "shake 0.5s";
       setTimeout(() => (this.playerNameInput.style.animation = ""), 500);
       return;
     }
-
     const scoreBtnPrevText = this.saveScoreButton.textContent;
     this.saveScoreButton.textContent = "Збереження...";
     this.saveScoreButton.disabled = true;
-
     const score = {
       name: playerNameStr,
       moves: this.moves,
       time: this.timer,
       timestamp: firebase.database.ServerValue.TIMESTAMP,
     };
-
     try {
       const leaderboardRef = database.ref("leaderboard");
       await leaderboardRef.push(score);
-
       if (typeof this.winModal.close === "function") {
         this.winModal.close();
       } else {
         this.winModal.removeAttribute("open");
       }
-
-      // Reload with animation
       this.leaderboardList.innerHTML = `
-                <div class="loading-skeleton"></div>
-                <div class="loading-skeleton"></div>
-                <div class="loading-skeleton"></div>
-            `;
+        <div class="loading-skeleton"></div>
+        <div class="loading-skeleton"></div>
+        <div class="loading-skeleton"></div>`;
       await this.loadLeaderboard();
     } catch (error) {
       console.error("Помилка збереження:", error);
@@ -541,28 +500,23 @@ class FifteenPuzzle {
   }
 
   escapeHTML(str) {
-    return str.replace(
-      /[&<>'"]/g,
-      (tag) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          "'": "&#39;",
-          '"': "&quot;",
-        })[tag] || tag,
-    );
+    return str.replace(/[&<>'"]/g, (tag) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    })[tag] || tag);
   }
 }
 
-// Add a quick keyframe for the shake error dynamically or rely on CSS. Let's add it via DOM.
 const style = document.createElement("style");
 style.textContent = `
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
-    }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
 `;
 document.head.appendChild(style);
 
