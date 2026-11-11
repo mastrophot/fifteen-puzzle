@@ -37,11 +37,17 @@
       this.boardElement = document.querySelector(".game-board");
       this.movesElement = document.getElementById("moves");
       this.timerElement = document.getElementById("timer");
+      this.correctCountEl = document.getElementById("correctCount");
       this.startButton = document.getElementById("startGame");
-      this.startBtnText = this.startButton.querySelector(".button-content");
       this.soundButton = document.getElementById("toggleSound");
       this.soundOnIcon = document.getElementById("soundOnIcon");
       this.soundOffIcon = document.getElementById("soundOffIcon");
+
+      this.openRecordsBtn = document.getElementById("openRecords");
+      this.recordsTriggerLabel = document.getElementById("recordsTriggerLabel");
+      this.recordsModal = document.getElementById("recordsModal");
+      this.closeRecordsBtn = document.getElementById("closeRecords");
+
       this.winModal = document.getElementById("winModal");
       this.finalTimeEl = document.getElementById("finalTime");
       this.finalMovesEl = document.getElementById("finalMoves");
@@ -55,6 +61,21 @@
       this.startButton.addEventListener("click", () => {
         this.unlockAudio();
         this.startNewGame(true);
+      });
+
+      this.openRecordsBtn.addEventListener("click", () => {
+        this.renderLeaderboard();
+        this.openDialog(this.recordsModal);
+      });
+
+      this.closeRecordsBtn.addEventListener("click", () => {
+        this.closeDialog(this.recordsModal);
+      });
+
+      this.recordsModal.addEventListener("click", (e) => {
+        if (e.target === this.recordsModal) {
+          this.closeDialog(this.recordsModal);
+        }
       });
 
       this.soundButton.addEventListener("click", () => {
@@ -78,7 +99,7 @@
 
       this.saveScoreButton.addEventListener("click", () => this.saveScore());
       this.closeModalButton.addEventListener("click", () => {
-        this.closeWinModal();
+        this.closeDialog(this.winModal);
         this.startNewGame(true);
       });
 
@@ -109,6 +130,24 @@
         this.pauseTimerLoop();
         this.saveToLocalStorage();
       });
+    }
+
+    openDialog(dialog) {
+      if (!dialog || dialog.open) return;
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute("open", "");
+      }
+    }
+
+    closeDialog(dialog) {
+      if (!dialog) return;
+      if (typeof dialog.close === "function") {
+        if (dialog.open) dialog.close();
+      } else {
+        dialog.removeAttribute("open");
+      }
     }
 
     /* --- Audio (Lazy Unlock on First User Gesture) --- */
@@ -143,10 +182,10 @@
         gain.connect(this.audioCtx.destination);
         osc.frequency.value = 500 + Math.random() * 70;
         osc.type = "sine";
-        gain.gain.setValueAtTime(0.11, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
         osc.start(now);
-        osc.stop(now + 0.065);
+        osc.stop(now + 0.06);
       } catch {}
     }
 
@@ -162,7 +201,7 @@
           osc.frequency.value = freq;
           osc.type = "sine";
           const t = this.audioCtx.currentTime + i * 0.11;
-          gain.gain.setValueAtTime(0.13, t);
+          gain.gain.setValueAtTime(0.12, t);
           gain.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
           osc.start(t);
           osc.stop(t + 0.24);
@@ -170,7 +209,7 @@
       } catch {}
     }
 
-    /* --- Timer Management (Starts on First Move, Pauses in Background Tab) --- */
+    /* --- Timer Management --- */
     startTimerLoop() {
       if (this.timerInterval || !this.isPlaying || !this.hasMoved || document.hidden) return;
       this.lastTickAt = performance.now();
@@ -276,7 +315,7 @@
     }
 
     startNewGame(vibrateFeedback = false) {
-      if (vibrateFeedback) this.vibrate(25);
+      if (vibrateFeedback) this.vibrate(20);
       this.pauseTimerLoop();
       this.clearSavedGame();
 
@@ -290,10 +329,9 @@
       this.updateTimerDisplay();
       this.board = this.createShuffledBoard();
       this.renderBoard(null);
-      if (this.startBtnText) this.startBtnText.textContent = "Перемішати поле";
     }
 
-    /* --- 15-Puzzle Math (Fisher-Yates + Exact Parity Invariant) --- */
+    /* --- 15-Puzzle Math --- */
     createShuffledBoard() {
       let numbers;
       do {
@@ -369,6 +407,7 @@
       }
 
       const slidingTiles = [];
+      let correctCount = 0;
 
       this.board.forEach((number, index) => {
         const tile = tiles[index];
@@ -382,6 +421,8 @@
 
         const isEmpty = number === 0;
         const isCorrect = !isEmpty && number === index + 1;
+        if (isCorrect) correctCount++;
+
         tile.className = `tile${isEmpty ? " empty" : ""}${isCorrect ? " is-correct" : ""}`;
         tile.textContent = isEmpty ? "" : String(number);
         tile.setAttribute(
@@ -401,6 +442,10 @@
           }
         }
       });
+
+      if (this.correctCountEl) {
+        this.correctCountEl.textContent = String(correctCount);
+      }
 
       if (slidingTiles.length > 0) {
         void this.boardElement.offsetWidth;
@@ -447,7 +492,6 @@
       const emptyCol = emptyIndex % 4;
       const isHorizontal = Math.abs(dx) > Math.abs(dy);
 
-      // Якщо свайп почався з плитки в одному ряду/колонці з порожньою клітинкою у її напрямку — рухаємо весь сегмент
       if (startTileIndex >= 0 && this.board[startTileIndex] !== 0) {
         const tRow = Math.floor(startTileIndex / 4);
         const tCol = startTileIndex % 4;
@@ -460,7 +504,6 @@
         }
       }
 
-      // Загальний свайп по дошці зсуває сусідню плитку в напрямку руху пальця
       let targetIndex = -1;
       if (isHorizontal) {
         if (dx > 0 && emptyCol > 0) targetIndex = emptyIndex - 1;
@@ -484,7 +527,7 @@
     }
 
     handleKeyPress(e) {
-      if (!this.isPlaying || this.winModal.open) return;
+      if (!this.isPlaying || this.winModal.open || this.recordsModal.open) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const tag = document.activeElement ? document.activeElement.tagName : "";
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
@@ -603,20 +646,8 @@
         this.playerNameInput.value = savedName.slice(0, 20);
         this.playerNameInput.classList.remove("input-error");
 
-        if (typeof this.winModal.showModal === "function") {
-          this.winModal.showModal();
-        } else {
-          this.winModal.setAttribute("open", "");
-        }
+        this.openDialog(this.winModal);
       }, 220);
-    }
-
-    closeWinModal() {
-      if (typeof this.winModal.close === "function") {
-        if (this.winModal.open) this.winModal.close();
-      } else {
-        this.winModal.removeAttribute("open");
-      }
     }
 
     triggerConfetti() {
@@ -632,12 +663,12 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      const colors = ["#38bdf8", "#818cf8", "#34d399", "#fbbf24", "#f472b6"];
-      const pieces = Array.from({ length: 110 }, () => ({
+      const colors = ["#34d399", "#6ee7b7", "#fbbf24", "#f4f4f6", "#a1a1aa"];
+      const pieces = Array.from({ length: 95 }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height - canvas.height,
-        w: Math.random() * 9 + 5,
-        h: Math.random() * 5 + 4,
+        w: Math.random() * 8 + 5,
+        h: Math.random() * 4 + 4,
         c: colors[Math.floor(Math.random() * colors.length)],
         dy: Math.random() * 3 + 2.2,
         dx: Math.random() * 2 - 1,
@@ -676,10 +707,10 @@
           this.confettiFrameId = null;
         }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }, 4500);
+      }, 4200);
     }
 
-    /* --- Validated Local Top-10 Leaderboard (XSS-Safe DOM Construction) --- */
+    /* --- Validated Local Top-10 Leaderboard --- */
     readRecords() {
       try {
         const raw = localStorage.getItem(RECORDS_KEY);
@@ -712,12 +743,17 @@
 
     renderLeaderboard() {
       const records = this.readRecords();
+      if (this.recordsTriggerLabel) {
+        this.recordsTriggerLabel.textContent =
+          records.length > 0 ? this.formatSeconds(records[0].time) : "Рекорди";
+      }
+
       this.leaderboardList.textContent = "";
 
       if (records.length === 0) {
         const empty = document.createElement("div");
         empty.className = "leaderboard-empty";
-        empty.textContent = "Рекордів ще немає. Збери поле 1–15, щоб відкрити таблицю.";
+        empty.textContent = "Рекордів ще немає. Збери поле 1–15, щоб зафіксувати перший час.";
         this.leaderboardList.appendChild(empty);
         return;
       }
@@ -744,15 +780,15 @@
         const stats = document.createElement("div");
         stats.className = "player-stats";
 
+        const movesEl = document.createElement("span");
+        movesEl.textContent = `${rec.moves} х.`;
+
         const timeEl = document.createElement("span");
         timeEl.className = "time";
         timeEl.textContent = this.formatSeconds(rec.time);
 
-        const movesEl = document.createElement("span");
-        movesEl.textContent = `${rec.moves} ходів`;
-
-        stats.appendChild(timeEl);
         stats.appendChild(movesEl);
+        stats.appendChild(timeEl);
 
         item.appendChild(info);
         item.appendChild(stats);
@@ -764,7 +800,7 @@
 
     saveScore() {
       if (!this.canSaveWin || !this.checkWinCondition(this.board) || this.moves < 1) {
-        this.closeWinModal();
+        this.closeDialog(this.winModal);
         return;
       }
 
@@ -798,8 +834,9 @@
 
       this.latestRecordId = recordId;
       this.renderLeaderboard();
-      this.closeWinModal();
+      this.closeDialog(this.winModal);
       this.startNewGame(false);
+      this.openDialog(this.recordsModal);
     }
   }
 

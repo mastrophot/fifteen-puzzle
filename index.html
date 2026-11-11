@@ -11,16 +11,16 @@
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#0c0d10" />
     <meta
       name="description"
-      content="Класична головоломка П'ятнашки (4x4) з плавною FLIP-фізикою плиток, підтримкою свайпів і таблицею особистих рекордів."
+      content="Тактильна головоломка П'ятнашки (4x4) з плавною FLIP-фізикою плиток, підтримкою свайпів і таблицею особистих рекордів."
     />
     <title>П'ятнашки — 15 Puzzle</title>
 
     <link
       rel="icon"
-      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%230f172a%22/><rect x=%224%22 y=%224%22 width=%2256%22 height=%2256%22 rx=%2213%22 fill=%22none%22 stroke=%22%2338bdf8%22 stroke-opacity=%220.45%22 stroke-width=%222.5%22/><text x=%2232%22 y=%2242%22 text-anchor=%22middle%22 font-family=%22system-ui,sans-serif%22 font-weight=%22800%22 font-size=%2228%22 fill=%22%23f8fafc%22>15</text></svg>"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2215%22 fill=%22%2314161c%22/><rect x=%223%22 y=%223%22 width=%2258%22 height=%2258%22 rx=%2213%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.14%22 stroke-width=%222%22/><circle cx=%2250%22 cy=%2214%22 r=%224%22 fill=%22%2334d399%22/><text x=%2231%22 y=%2243%22 text-anchor=%22middle%22 font-family=%22system-ui,sans-serif%22 font-weight=%22800%22 font-size=%2228%22 fill=%22%23f4f4f6%22>15</text></svg>"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,25 +29,36 @@
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="style.css?v=2" />
-    <script src="script.js?v=2" defer></script>
+    <link rel="stylesheet" href="style.css?v=3" />
+    <script src="script.js?v=3" defer></script>
   </head>
   <body>
-    <main class="container">
-      <section
-        class="game-container glass-panel"
-        aria-label="Ігрове поле головоломки"
-      >
-        <header class="game-info">
-          <div class="stat-badge moves">
-            <span>Ходів:</span>
-            <span id="moves" class="stat-value">0</span>
+    <main class="app-stage">
+      <section class="puzzle-chassis" aria-label="Головоломка П'ятнашки">
+        <header class="chassis-top">
+          <div class="brand">
+            <span class="brand-keycap" aria-hidden="true">15</span>
+            <h1 class="brand-title">П'ятнашки</h1>
           </div>
-          <div class="header-right">
-            <div class="stat-badge timer">
-              <span>Час:</span>
-              <span id="timer" class="stat-value">00:00</span>
-            </div>
+
+          <div class="toolbar-actions">
+            <button
+              type="button"
+              id="openRecords"
+              class="records-trigger"
+              aria-label="Відкрити таблицю рекордів"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+              <span id="recordsTriggerLabel">Рекорди</span>
+            </button>
+
             <button
               type="button"
               id="toggleSound"
@@ -70,35 +81,64 @@
           </div>
         </header>
 
-        <div class="game-board-wrapper">
-          <div class="game-board" role="grid" aria-label="П'ятнашки 4 на 4"></div>
+        <div class="instrument-strip">
+          <div class="readout-cell">
+            <span class="readout-label">Ходів</span>
+            <span id="moves" class="readout-value">0</span>
+          </div>
+          <div class="readout-cell">
+            <span class="readout-label">Час</span>
+            <span id="timer" class="readout-value">00:00</span>
+          </div>
         </div>
 
-        <button type="button" id="startGame" class="glow-button">
-          <span class="button-content">Перемішати поле</span>
-        </button>
+        <div class="game-board-wrapper">
+          <div class="game-board" role="grid" aria-label="Ігрове поле 4 на 4"></div>
+        </div>
+
+        <footer class="chassis-footer">
+          <div class="progress-indicator" aria-label="Зібрано плиток на своїх місцях">
+            <span class="progress-dot" aria-hidden="true"></span>
+            <span>На місці: <strong id="correctCount">0</strong> / 15</span>
+          </div>
+
+          <button type="button" id="startGame" class="shuffle-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span class="button-content">Перемішати</span>
+          </button>
+        </footer>
       </section>
 
-      <aside class="leaderboard glass-panel" aria-label="Таблиця рекордів">
-        <div class="leaderboard-header">
-          <h2>Топ-10 рекордів</h2>
-          <span class="leaderboard-caption">Локально</span>
+      <dialog class="modal" id="recordsModal" aria-labelledby="recordsModalTitle">
+        <div class="modal-content records-modal-content">
+          <div class="modal-header-row">
+            <h2 id="recordsModalTitle">Топ-10 рекордів</h2>
+            <button type="button" id="closeRecords" class="icon-button close-icon-btn" aria-label="Закрити рекорди">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div id="leaderboardList" class="leaderboard-list"></div>
         </div>
-        <div id="leaderboardList" class="leaderboard-list"></div>
-      </aside>
+      </dialog>
 
       <dialog class="modal" id="winModal" aria-labelledby="winTitle">
         <div class="modal-content">
-          <div class="win-icon" aria-hidden="true">🏆</div>
-          <h2 id="winTitle">Блискуча перемога!</h2>
+          <div class="win-badge" aria-hidden="true">15</div>
+          <h2 id="winTitle">Поле зібрано!</h2>
           <div class="final-stats">
             <div class="stat-box">
               <span class="stat-label">Час</span>
-              <span id="finalTime" class="stat-value highlight">--:--</span>
+              <span id="finalTime" class="highlight">--:--</span>
             </div>
             <div class="stat-box">
               <span class="stat-label">Ходів</span>
-              <span id="finalMoves" class="stat-value highlight">0</span>
+              <span id="finalMoves" class="highlight">0</span>
             </div>
           </div>
           <div class="input-group">
@@ -108,16 +148,16 @@
             <input
               type="text"
               id="playerName"
-              placeholder="Введіть ваше ім'я"
+              placeholder="Ваше ім'я"
               maxlength="20"
               autocomplete="off"
             />
           </div>
-          <button type="button" id="saveScore" class="glow-button primary">
+          <button type="button" id="saveScore" class="primary-button">
             Зберегти рекорд
           </button>
-          <button type="button" id="closeModal" class="text-button mt-4">
-            Нова партія
+          <button type="button" id="closeModal" class="text-button mt-3">
+            Нова партія без запису
           </button>
         </div>
       </dialog>
