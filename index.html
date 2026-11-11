@@ -4,74 +4,93 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
     />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="theme-color" content="#0f172a" />
     <meta
       name="description"
-      content="Сучасна головоломка П'ятнашки з преміальним дизайном. Розвивай мислення та змагайся у швидкості!"
+      content="Класична головоломка П'ятнашки (4x4) з плавною FLIP-фізикою плиток, підтримкою свайпів і таблицею особистих рекордів."
     />
-    <title>П'ятнашки | Преміум</title>
+    <title>П'ятнашки — 15 Puzzle</title>
 
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%230f172a%22/><rect x=%224%22 y=%224%22 width=%2256%22 height=%2256%22 rx=%2213%22 fill=%22none%22 stroke=%22%2338bdf8%22 stroke-opacity=%220.45%22 stroke-width=%222.5%22/><text x=%2232%22 y=%2242%22 text-anchor=%22middle%22 font-family=%22system-ui,sans-serif%22 font-weight=%22800%22 font-size=%2228%22 fill=%22%23f8fafc%22>15</text></svg>"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500&family=Outfit:wght@400;600;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Outfit:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="style.css" />
-
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link rel="stylesheet" href="style.css?v=2" />
+    <script src="script.js?v=2" defer></script>
   </head>
   <body>
-    <div class="mesh-background" aria-hidden="true"></div>
-
     <main class="container">
       <section
         class="game-container glass-panel"
         aria-label="Ігрове поле головоломки"
       >
         <header class="game-info">
-          <div class="stat-badge moves" aria-live="polite">
-            Ходів: <span id="moves" class="stat-value">0</span>
+          <div class="stat-badge moves">
+            <span>Ходів:</span>
+            <span id="moves" class="stat-value">0</span>
           </div>
-          <div class="stat-badge timer" aria-live="polite">
-            Час: <span id="timer" class="stat-value">00:00</span>
+          <div class="header-right">
+            <div class="stat-badge timer">
+              <span>Час:</span>
+              <span id="timer" class="stat-value">00:00</span>
+            </div>
+            <button
+              type="button"
+              id="toggleSound"
+              class="icon-button"
+              aria-label="Перемкнути звук"
+              aria-pressed="true"
+              title="Звук увімкнено"
+            >
+              <svg id="soundOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              </svg>
+              <svg id="soundOffIcon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+            </button>
           </div>
         </header>
 
         <div class="game-board-wrapper">
-          <div class="game-board" role="grid" aria-label="П'ятнашки 4x4">
-            <!-- Tiles will be generated here -->
-          </div>
+          <div class="game-board" role="grid" aria-label="П'ятнашки 4 на 4"></div>
         </div>
 
-        <button id="startGame" class="glow-button" aria-label="Почати нову гру">
-          <span class="button-content">Нова гра</span>
-          <span class="button-glow"></span>
+        <button type="button" id="startGame" class="glow-button">
+          <span class="button-content">Перемішати поле</span>
         </button>
       </section>
 
       <aside class="leaderboard glass-panel" aria-label="Таблиця рекордів">
-        <h2>Топ гравців</h2>
-        <div id="leaderboardList" class="leaderboard-list">
-          <div class="loading-skeleton"></div>
-          <div class="loading-skeleton"></div>
-          <div class="loading-skeleton"></div>
+        <div class="leaderboard-header">
+          <h2>Топ-10 рекордів</h2>
+          <span class="leaderboard-caption">Локально</span>
         </div>
+        <div id="leaderboardList" class="leaderboard-list"></div>
       </aside>
 
-      <dialog class="modal glass-modal" id="winModal">
+      <dialog class="modal" id="winModal" aria-labelledby="winTitle">
         <div class="modal-content">
-          <div class="win-icon">🏆</div>
-          <h2>Блискуча перемога!</h2>
+          <div class="win-icon" aria-hidden="true">🏆</div>
+          <h2 id="winTitle">Блискуча перемога!</h2>
           <div class="final-stats">
             <div class="stat-box">
               <span class="stat-label">Час</span>
@@ -94,21 +113,20 @@
               autocomplete="off"
             />
           </div>
-          <button id="saveScore" class="glow-button primary">
-            Зберегти назавжди
+          <button type="button" id="saveScore" class="glow-button primary">
+            Зберегти рекорд
           </button>
-          <button id="closeModal" class="text-button mt-4">Закрити</button>
+          <button type="button" id="closeModal" class="text-button mt-4">
+            Нова партія
+          </button>
         </div>
       </dialog>
     </main>
 
-    <!-- Confetti canvas -->
     <canvas
       id="confetti-canvas"
       class="confetti-canvas"
       aria-hidden="true"
     ></canvas>
-
-    <script src="script.js"></script>
   </body>
 </html>
