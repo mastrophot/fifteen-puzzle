@@ -51,6 +51,8 @@
 html {
   background-color: var(--bg-canvas);
   color-scheme: dark;
+  overflow-x: clip;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -63,20 +65,17 @@ body {
   color: var(--text-primary);
   font-family: var(--font-main);
   padding: 16px;
-  overflow-x: hidden;
+  overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: relative;
-  isolation: isolate;
 }
 
-body::before {
-  content: "";
+.site-bg {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
-  transform: translateZ(0);
+  background-color: var(--bg-canvas);
   background-image:
     radial-gradient(circle at 50% 48%, rgba(16, 20, 26, 0.24) 0%, rgba(7, 8, 11, 0.68) 100%),
     url("./bg-slate.webp");
@@ -87,6 +86,8 @@ body::before {
 
 /* --- Symmetrical Single-Axis Stage --- */
 .app-stage {
+  position: relative;
+  z-index: 1;
   width: 100%;
   display: flex;
   justify-content: center;
