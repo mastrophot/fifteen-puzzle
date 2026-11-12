@@ -51,8 +51,6 @@
 html {
   background-color: var(--bg-canvas);
   color-scheme: dark;
-  overflow-x: clip;
-  overscroll-behavior-y: none;
 }
 
 body {
@@ -65,9 +63,15 @@ body {
   color: var(--text-primary);
   font-family: var(--font-main);
   padding: 16px;
-  overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
 }
 
 .site-bg {
@@ -89,6 +93,7 @@ body {
   position: relative;
   z-index: 1;
   width: 100%;
+  overflow-x: clip;
   display: flex;
   justify-content: center;
   align-items: center;
