@@ -95,19 +95,19 @@ body {
 }
 
 .puzzle-chassis {
-  width: 100%;
-  max-width: 460px;
+  width: min(92vw, 680px, calc(100dvh - 235px));
+  max-width: 680px;
   background: var(--chassis-bg);
   border: 1px solid var(--chassis-border);
-  border-radius: 24px;
-  padding: 22px;
+  border-radius: 28px;
+  padding: 28px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.09),
-    0 32px 64px -12px rgba(0, 0, 0, 0.88),
-    0 10px 20px -6px rgba(0, 0, 0, 0.72);
+    0 36px 72px -12px rgba(0, 0, 0, 0.9),
+    0 12px 24px -6px rgba(0, 0, 0, 0.74);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* --- Identity Top Bar --- */
@@ -115,29 +115,29 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .brand-keycap {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   background: linear-gradient(180deg, #272b35 0%, #1c1f27 100%);
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 2px 0 #0a0b0e;
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 3px 0 #0a0b0e;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-heading);
-  font-size: 0.92rem;
+  font-size: 1.12rem;
   font-weight: 800;
   color: var(--text-primary);
   position: relative;
@@ -146,17 +146,17 @@ body {
 .brand-keycap::after {
   content: "";
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 4px;
-  height: 4px;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--correct-led);
 }
 
 .brand-title {
   font-family: var(--font-heading);
-  font-size: 1.18rem;
+  font-size: 1.48rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -165,45 +165,45 @@ body {
 .toolbar-actions {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .records-trigger {
-  height: 36px;
-  padding: 0 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
   border: 1px solid var(--chassis-border);
   color: var(--text-secondary);
   font-family: var(--font-main);
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .records-trigger svg {
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   color: var(--accent-amber);
   flex-shrink: 0;
 }
 
 .records-trigger:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .icon-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
   border: 1px solid var(--chassis-border);
   color: var(--text-muted);
   display: inline-flex;
@@ -215,14 +215,14 @@ body {
 }
 
 .icon-button svg {
-  width: 17px;
-  height: 17px;
+  width: 20px;
+  height: 20px;
 }
 
 .icon-button:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .icon-button[aria-pressed="true"] {
@@ -233,23 +233,23 @@ body {
 .instrument-strip {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 14px;
 }
 
 .readout-cell {
   background: var(--recess-bg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
-  border-radius: 12px;
-  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.65);
+  border-radius: 15px;
+  padding: 13px 18px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
 }
 
 .readout-label {
-  font-size: 0.74rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -258,7 +258,7 @@ body {
 
 .readout-value {
   font-family: var(--font-heading);
-  font-size: 1.22rem;
+  font-size: 1.55rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
@@ -272,13 +272,13 @@ body {
 .game-board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 9px;
+  gap: 12px;
   aspect-ratio: 1;
-  padding: 10px;
+  padding: 14px;
   background: var(--recess-bg);
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.75);
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.78);
   user-select: none;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
@@ -287,22 +287,22 @@ body {
 .tile {
   aspect-ratio: 1;
   background: linear-gradient(180deg, var(--keycap-top) 0%, var(--keycap-bottom) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-heading);
-  font-size: clamp(1.4rem, 5.2vw, 1.95rem);
+  font-size: clamp(1.55rem, 3.2vmin, 2.55rem);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   cursor: pointer;
   position: relative;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 3px 0 var(--keycap-lip),
-    0 5px 10px rgba(0, 0, 0, 0.45);
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    0 4px 0 var(--keycap-lip),
+    0 7px 14px rgba(0, 0, 0, 0.48);
   transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
 }
 
@@ -312,21 +312,21 @@ body {
   border-color: var(--correct-border);
   color: var(--correct-text);
   box-shadow:
-    inset 0 1px 0 rgba(110, 231, 183, 0.18),
-    0 3px 0 #091310,
-    0 5px 10px rgba(0, 0, 0, 0.45);
+    inset 0 1px 0 rgba(110, 231, 183, 0.19),
+    0 4px 0 #091310,
+    0 7px 14px rgba(0, 0, 0, 0.48);
 }
 
 .tile.is-correct::after {
   content: "";
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 5px;
-  height: 5px;
+  top: 10px;
+  right: 10px;
+  width: 6.5px;
+  height: 6.5px;
   border-radius: 50%;
   background: var(--correct-led);
-  box-shadow: 0 0 6px rgba(52, 211, 153, 0.7);
+  box-shadow: 0 0 7px rgba(52, 211, 153, 0.72);
 }
 
 .tile.is-sliding {
@@ -364,8 +364,8 @@ body {
 .progress-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.82rem;
+  gap: 9px;
+  font-size: 0.95rem;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
@@ -376,33 +376,33 @@ body {
 }
 
 .progress-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--correct-led);
-  box-shadow: 0 0 6px rgba(52, 211, 153, 0.55);
+  box-shadow: 0 0 7px rgba(52, 211, 153, 0.6);
 }
 
 .shuffle-button {
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.11);
   color: var(--text-secondary);
   font-family: var(--font-main);
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .shuffle-button svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .shuffle-button:hover {
@@ -424,7 +424,7 @@ body {
   background: transparent;
   padding: 0;
   z-index: 1000;
-  width: min(92vw, 400px);
+  width: min(92vw, 460px);
 }
 
 .modal::backdrop {
@@ -695,14 +695,44 @@ body {
   z-index: 999;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   body {
     padding: 10px;
   }
   .puzzle-chassis {
+    width: 100%;
+    max-width: 460px;
     padding: 16px;
     border-radius: 20px;
     gap: 13px;
+  }
+  .brand-keycap {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    font-size: 0.94rem;
+  }
+  .brand-title {
+    font-size: 1.2rem;
+  }
+  .records-trigger {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 0.82rem;
+  }
+  .icon-button {
+    width: 36px;
+    height: 36px;
+  }
+  .readout-cell {
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+  .readout-label {
+    font-size: 0.74rem;
+  }
+  .readout-value {
+    font-size: 1.22rem;
   }
   .game-board {
     gap: 7px;
@@ -711,12 +741,21 @@ body {
   }
   .tile {
     border-radius: 10px;
+    font-size: clamp(1.4rem, 5.4vw, 1.9rem);
   }
   .tile.is-correct::after {
     top: 6px;
     right: 6px;
     width: 4.5px;
     height: 4.5px;
+  }
+  .progress-indicator,
+  .shuffle-button {
+    font-size: 0.82rem;
+  }
+  .shuffle-button {
+    height: 36px;
+    padding: 0 14px;
   }
 }
 
